@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Music Downloader</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
+    }
+    .search-container {
+      text-align: center;
+      margin: 20px 0;
+    }
+    .search-input {
+      padding: 10px 15px;
+      width: 70%;
+      max-width: 500px;
+      font-size: 16px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .search-button {
+      position: relative;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-left: 10px;
+      transition: background-color 0.3s ease;
+      overflow: hidden;
+    }
+    .search-button:hover {
+      background-color: #45a049;
+    }
+    .search-button:disabled {
+      background-color: #888;
+      cursor: not-allowed;
+    }
+    .search-button .spinner {
+    position: absolute;
+    right: 142px;
+    top: -19%;
+    width: 27px;
+    transform-style: preserve-3d;
+    transform: skewX(-27deg);
+    animation-name: spin;
+    animation-iteration-count: infinite;
+    animation-duration: 1s;
+    }
+    .search-button.processing .spinner {
+      display: block;
+    }
+    @keyframes spin {
+      from { right: 142px; }
+      to{right: -45px;}
+    }
+    .results {
+      margin-top: 30px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+    .song-card {
+      position: relative;
+      background-color: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      width: 100%;
+      max-width: 600px;
+    }
+    .song-image {
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-right: 20px;
+    }
+    .song-details {
+      flex: 1;
+    }
+    .song-details h3 {
+      margin: 0 0 10px 0;
+      font-size: 1.2em;
+      color: #333;
+    }
+    .song-details p {
+      margin: 0 0 15px 0;
+      color: #666;
+    }
+    .button-group {
+      display: flex;
+      gap: 10px;
+    }
+    .download-button, .download-post-button, .stream-button {
+      position: relative;
+      padding: 8px 12px;
+      font-size: 14px;
+      background-color: #008CBA;
+      color: white;
+      text-decoration: none;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      display: flex;
+      align-items: center;
+    }
+    .download-button:hover {
+      background-color: #007bb5;
+      overflow: hidden;
+    }
+    .download-post-button:hover {
+      background-color: #007bb5;
+      overflow: hidden;
+    }
+    .stream-button:hover {
+      background-color: #007bb5;
+    }
+    .stream-button img {
+      width: 16px;
+      height: 16px;
+      margin-right: 5px;
+    }
+    .spinner {
+      width: 30px;
+      height: 50px;
+      position: absolute;
+      background: #ffffffbf;
+      transform-style: preserve-3d;
+      transform: skewX(20px);
+      margin-left: 50px;
+    }
+    .download-button.processing .spinner,
+    .download-post-button.processing .spinner,
+    .stream-button.processing .spinner,
+    .search-button.processing .spinner,
+    .load-more-button.processing .spinner {
+      display: block;
+    }
+    .lkink {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      width: 32px;
+      height: 32px;
+      background: url('https://img.icons8.com/?size=100&id=qD4mOc3abDh0&format=png&color=000000') no-repeat center center;
+      background-size: contain;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+    .lkink:hover {
+      transform: scale(1.05);
+      background: url('https://img.icons8.com/?size=100&id=qD4mOc3abDh0&format=png&color=0e86d4') no-repeat center center;
+      background-size: contain;
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+      .song-card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .song-image {
+        margin-right: 0;
+        margin-bottom: 15px;
+      }
+      .link {
+        left: 10px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .search-input {
+        width: 100%;
+        margin-bottom: 10px;
+        margin-left: -16px;
+        margin-top: 25px;
+      }
+      .search-button {
+        width: 50%;
+        margin-left: 3px;
+      }
+      .button-group {
+        flex-direction: column;
+        width: 84%;
+        
+      }
+      .download-button, .download-post-button, .stream-button {
+        width: 84%;
+        text-align: center;
+        justify-content: center;
+      }
+      .download-button .spinner, .download-post-button .spinner, .stream-button .spinner {
+        margin-left: 0;
+        margin-top: 5px;
+      }
+      .link {
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    /* Custom Shine Animation */
+    @keyframes spin {
+      from { right: 142px; }
+      to { right: -45px; }
+    }
+
+    /* General Spinner Styling for All Buttons */
+    .button .spinner {
+      position: absolute;
+      right: 142px;
+      top: -19%;
+      width: 27px;
+      transform-style: preserve-3d;
+      transform: skewX(-27deg);
+      animation-name: spin;
+      animation-iteration-count: infinite;
+      animation-duration: 1s;
+      display: none; /* Hidden by default */
+    }
+
+    /* Display Spinner When Button Has 'processing' Class */
+    .button.processing .spinner {
+      display: block;
+    }
+
+    /* Positioning Relative for Buttons to Position the Spinner Correctly */
+    .button {
+      position: relative;
+      /* Other button styles... */
+    }
+  </style>
+</head>
+<body>
+  <h1>Music Downloader</h1>
+  
+  <div class="search-container">
+    <!-- <form id="searchForm" action="{{ url_for('search') }}" method="GET"></form> -->
+    <form id="searchForm" action="{{ url_for('search') }}" method="GET">
+      <input type="text" name="query" class="search-input" placeholder="Enter song name..." value="{{ query or '' }}" required>
+      <button type="submit" class="button search-button" id="searchButton">
+        Search
+        <div class="spinner"></div>
+      </button>
+    </form>
+  </div>
+
+  {% if error %}
+  <div class="error" style="text-align: center; color: red; margin-bottom: 20px;">
+    {{ error }}
+  </div>
+  {% endif %}
+
+  {% if results %}
+  <div class="results">
+    {% for song in results %}
+    <div class="song-card">
+      {% if song.image %}
+      <a href="{{ song.url }}" target="_blank">
+        <img src="{{ song.image }}" alt="Cover Image" class="song-image" loading="lazy">
+      </a>
+      {% endif %}
+      <div class="song-details">
+        <h3>{{ song.title }}</h3>
+        <p>Artist: {{ song.artist }}</p>
+        <div class="button-group">
+          <a href="{{ url_for('download_endpoint', url=song.url) }}" class="button download-button" onclick="handleDownload(this)">
+            Download
+            <div class="spinner"></div>
+          </a>
+          <a href="{{ url_for('download_and_post') }}?url={{ song.url | urlencode }}&title={{ song.title | urlencode }}" class="button download-post-button" onclick="handleDownloadPost(this)">
+            Download & Post
+            <div class="spinner"></div>
+          </a>
+          <a href="{{ song.url }}" target="_blank" class="button stream-button" onclick="handleStream(this)">
+            <img src="https://img.icons8.com/?size=100&id=qD4mOc3abDh0&format=png&color=000000" alt="Stream on JioSaavn" style="width: 16px; height: 16px; margin-right: 5px;">
+            <div class="spinner"></div>
+          </a>
+        </div>
+      </div>
+      <a href="{{ url_for('download_and_post') }}?url={{ song.url | urlencode }}&title={{ song.title | urlencode }}" class="link" title="Download & Post to Telegram"></a>
+    </div>
+    {% endfor %}
+  </div>
+  <form action="{{ url_for('search') }}" method="GET" style="text-align: center; margin-top: 20px;">
+    <input type="hidden" name="query" value="{{ query }}">
+    <input type="hidden" name="page" value="{{ page_number + 1 }}">
+    <button type="submit" class="button load-more-button" onclick="handleLoadMore(this)">
+      Load More
+      <div class="spinner"></div>
+    </button>
+  </form>
+  {% endif %}
+
+  {% if no_results %}
+  <div class="no-results" style="text-align: center; color: #666; margin-top: 20px;">
+    No songs found for "{{ query }}". Please try a different search term.
+  </div>
+  {% endif %}
+
+  <script>
+    // Handle Search Form Submission
+    document.getElementById('searchForm').addEventListener('submit', function() {
+      var searchButton = document.getElementById('searchButton');
+      searchButton.classList.add('processing');
+    });
+
+    // Function to handle Download Button Click
+    function handleDownload(button) {
+      if (!button.classList.contains('processing')) {
+        button.classList.add('processing');
+      }
+    }
+
+    // Function to handle Download & Post Button Click
+    function handleDownloadPost(button) {
+      if (!button.classList.contains('processing')) {
+        button.classList.add('processing');
+      }
+    }
+
+    // Function to handle Stream Button Click
+    function handleStream(button) {
+      if (!button.classList.contains('processing')) {
+        button.classList.add('processing');
+        // Optionally, disable the link to prevent multiple clicks
+        button.style.pointerEvents = 'none';
+      }
+    }
+
+    // Function to handle Load More Button Click
+    function handleLoadMore(button) {
+      if (!button.classList.contains('processing')) {
+        button.classList.add('processing');
+      }
+    }
+
+    // Optional: Revert button state after a certain time (e.g., if using AJAX, revert after response)
+    // Since current implementation uses synchronous navigation, buttons will reset on page reload
+  </script>
+</body>
+</html>
