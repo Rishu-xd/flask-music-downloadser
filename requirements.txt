@@ -1,0 +1,5 @@
+Flask
+playwright
+requests
+beautifulsoup4
+pyTelegramBotAPI
